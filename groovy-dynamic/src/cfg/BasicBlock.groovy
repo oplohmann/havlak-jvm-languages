@@ -18,6 +18,11 @@
  * @author rhundt
  */
 
+/*
+ * Java code ported to Groovy by Oliver Plohmann
+ */
+
+
 package cfg;
 
 import java.util.ArrayList;

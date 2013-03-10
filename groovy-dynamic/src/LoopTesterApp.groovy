@@ -25,6 +25,11 @@
  *
  * @author rhundt
  */
+
+/*
+ * Java code ported to Groovy by Oliver Plohmann
+ */
+
 import cfg.BasicBlock
 import cfg.BasicBlockEdge
 import cfg.CFG
