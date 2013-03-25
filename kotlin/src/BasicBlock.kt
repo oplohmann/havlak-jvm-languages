@@ -1,5 +1,5 @@
 /**
- * Created with IntelliJ IDEA.
+ * Created with IntelliJ IDEA. 
  * User: Nutzer
  * Date: 22.01.13
  * Time: 21:36
