@@ -261,7 +261,7 @@ class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
                     // At this point, one can set attributes to the loop, such as:
                     //
                     // the bottom node:
-                    //    iter  = backPreds(w).begin(); 
+                    //    iter  = backPreds(w).begin();
                     //    loop bottom is: nodes(iter).node;
                     //
                     // the number of backedges:

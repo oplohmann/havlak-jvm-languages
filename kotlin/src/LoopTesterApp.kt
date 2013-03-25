@@ -1,7 +1,7 @@
 /**
  * Created with IntelliJ IDEA.
  * User: Nutzer
- * Date: 23.02.13 
+ * Date: 23.02.13
  * Time: 22:42
  * To change this template use File | Settings | File Templates.
  */
