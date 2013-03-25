@@ -1,109 +1,295 @@
 /**
  * Created with IntelliJ IDEA.
- * User: Nutzer
- * Date: 23.02.13
- * Time: 22:42
+ * User: plohmann
+ * Date: 16.01.13
+ * Time: 14:14
  * To change this template use File | Settings | File Templates.
  */
-public class LoopTesterApp {
+// Copyright 2011 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-    public var cfg : CFG = CFG()
-    public var lsg : LSG = LSG()
-    public var root : BasicBlock = cfg.createNode(0)
+//======================================================
+// Scaffold Code
+//======================================================
 
-    public open fun buildDiamond(start : Int) : Int {
-        var bb0 : Int = start
-        BasicBlockEdge(cfg, bb0, bb0 + 1)
-        BasicBlockEdge(cfg, bb0, bb0 + 2)
-        BasicBlockEdge(cfg, bb0 + 1, bb0 + 3)
-        BasicBlockEdge(cfg, bb0 + 2, bb0 + 3)
-        return bb0 + 3
+//
+// class BasicBlock
+//
+// BasicBlock only maintains a vector of in-edges and
+// a vector of out-edges.
+//
+import java.util.ArrayList
+import java.util.HashMap
+import java.util.HashSet
+import java.util.LinkedList
+
+
+
+class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
+
+
+    enum class BasicBlockClass {
+        BB_TOP          // uninitialized
+        BB_NONHEADER    // a regular BB
+        BB_REDUCIBLE    // reducible loop
+        BB_SELF         // single BB loop
+        BB_IRREDUCIBLE  // irreducible loop
+        BB_DEAD         // a dead BB
+        BB_LAST          // Sentinel
     }
 
-    public open fun buildConnect(start : Int, end : Int) : Unit {
-        BasicBlockEdge(cfg, start, end)
+
+    val UNVISITED: Int = -1
+
+    // Safeguard against pathologic algorithm behavior.
+    val MAXNONBACKPREDS: Int = (32 * 1024)
+
+    //
+    // IsAncestor
+    //
+    // As described in the paper, determine whether a node 'w' is a
+    // "true" ancestor for node 'v'.
+    //
+    // Dominance can be tested quickly using a pre-order trick
+    // for depth-first spanning trees. This is why DFS is the first
+    // thing we run below.
+    //
+    fun isAncestor(w: Int, v: Int, last: Array<Int>): Boolean {
+        return (w <= v) && (v <= last[w])
     }
 
-    public open fun buildStraight(start : Int, n : Int) : Int {
-        for (i in 0..n - 1) {
-            buildConnect(start + i, start + i + 1)
+    //
+    // DFS - Depth-First-Search
+    //
+    // DESCRIPTION:
+    // Simple depth first traversal along out edges with node numbering.
+    //
+    fun doDFS(
+            currentNode: BasicBlock,
+            nodes: Array<UnionFindNode>,
+            number: MutableMap<BasicBlock, Int>,
+            last: Array<Int>,
+            current: Int): Int
+    {
+        nodes[current].initNode(currentNode, current)
+        number.put(currentNode, current)
+
+        var lastid = current
+        for (target in currentNode.outEdges) {
+            if (number[target] == UNVISITED)
+                lastid = doDFS(target, nodes, number, last, lastid + 1)
         }
-        return start + n
+
+        last[number[currentNode]!!] = lastid
+        return lastid
     }
 
-    public open fun buildBaseLoop(from : Int) : Int {
-        var header : Int = buildStraight(from, 1)
-        var diamond1 : Int = buildDiamond(header)
-        var d11 : Int = buildStraight(diamond1, 1)
-        var diamond2 : Int = buildDiamond(d11)
-        var footer : Int = buildStraight(diamond2, 1)
-        buildConnect(diamond2, d11)
-        buildConnect(diamond1, header)
-        buildConnect(footer, from)
-        footer = buildStraight(footer, 1)
-        return footer
-    }
+    //
+    // findLoops
+    //
+    // Find loops and build loop forest using Havlak's algorithm, which
+    // is derived from Tarjan. Variable names and step numbering has
+    // been chosen to be identical to the nomenclature in Havlak's
+    // paper (which, in turn, is similar to the one used by Tarjan).
+    //
+    fun findLoops(): Int
+    {
+        if (cfg.startNode == null)
+            return 0
 
-    public open fun getMem() : Unit {
-        var runtime : Runtime = Runtime.getRuntime()
-        var value : Long = (runtime.totalMemory()) / 1024
-        println("  Total Memory: " + value + " KB")
-    }
+        var size = cfg.getNumNodes()
 
-}
+        var nonBackPreds = Array<MutableSet<Int>>(size, {HashSet<Int>()})
+        var backPreds = Array<MutableList<Int>>(size, {ArrayList<Int>()})
 
-fun main(args: Array<String>) {
-    println("Welcome to LoopTesterApp, Java edition")
-    println("Constructing App...")
-    var app : LoopTesterApp = LoopTesterApp()
-    app.getMem()
-    println("Constructing Simple CFG...")
-    app.cfg.createNode(0)
-    app.buildBaseLoop(0)
-    app.cfg.createNode(1)
-    BasicBlockEdge(app.cfg, 0, 2)
-    println("15000 dummy loops")
-    for (dummyloop in 0..(15000 - 1)) {
-        var finder : HavlakLoopFinder = HavlakLoopFinder(app.cfg, app.lsg)
-        finder.findLoops()
-    }
-    println("Constructing CFG...")
-    var n : Int = 2
-    for (parlooptrees in 0..(10 - 1)) {
-        app.cfg.createNode(n + 1)
-        app.buildConnect(2, n + 1)
-        n = n + 1
-        for (i in 0..100 - 1) {
-            var top : Int = n
-            n = app.buildStraight(n, 1)
-            for (j in 0..25 - 1) {
-                n = app.buildBaseLoop(n)
+        var number = HashMap<BasicBlock, Int>()
+
+        var header = Array<Int>(size, {0})
+        var types = Array<BasicBlockClass>(size, {BasicBlockClass.BB_LAST})
+        var last = Array<Int>(size, {0})
+        var nodes = Array<UnionFindNode>(size, {UnionFindNode()})
+
+
+        // Step a:
+        //   - initialize all nodes as unvisited.
+        //   - depth-first traversal and numbering.
+        //   - unreached BB's are marked as dead.
+        //
+        for (value in cfg.basicBlockMap.values()) {
+            number.put(value,  UNVISITED)
+        }
+
+        doDFS(cfg.startNode!!, nodes, number, last, 0)
+
+        // Step b:
+        //   - iterate over all nodes.
+        //
+        //   A backedge comes from a descendant in the DFS tree, and non-backedges
+        //   from non-descendants (following Tarjan).
+        //
+        //   - check incoming edges 'v' and add them to either
+        //     - the list of backedges (backPreds) or
+        //     - the list of non-backedges (nonBackPreds)
+        //
+        for (w in 0..(size - 1)) {
+            header[w] = 0
+            types[w] = BasicBlockClass.BB_NONHEADER
+
+            val nodeW = nodes[w].bb
+            if (nodeW == null) {
+                types[w] = BasicBlockClass.BB_DEAD
+                // No 'continue'
             }
-            var bottom : Int = app.buildStraight(n, 1)
-            app.buildConnect(n, top)
-            n = bottom
+            else {
+                if (nodeW.getNumPred() > 0) {
+                    for (nodeV in nodeW.inEdges) {
+                        val v = number[nodeV]!!
+                        if (v != UNVISITED) {
+                            if (isAncestor(w, v, last)) {
+                                backPreds[w].add(v)
+                            } else {
+                                nonBackPreds[w].add(v);
+                            }
+                        }
+                    }
+                }
+            }
         }
-        app.buildConnect(n, 1)
-    }
-    app.getMem()
-    println("Performing Loop Recognition\n1 Iteration\n")
-    var finder : HavlakLoopFinder = HavlakLoopFinder(app.cfg, app.lsg)
-    finder.findLoops()
-    app.getMem()
-    println("Another 50 iterations...")
-    var start : Long = System.currentTimeMillis()
-    var maxMemory : Long = Runtime.getRuntime().maxMemory()
-    for (i in 0..(50 - 1)) {
-        println(maxMemory - (Runtime.getRuntime().freeMemory()))
-        var finder2 : HavlakLoopFinder = HavlakLoopFinder(app.cfg, LSG())
-        finder2.findLoops()
-    }
-    println("Time: " + (System.currentTimeMillis() - start) + " ms")
-    println("")
-    app.getMem()
-    println("# of loops: " + (app.lsg.getNumLoops()) + " (including 1 artificial root node)")
-    println("# of BBs  : " + BasicBlock.getMyNumBasicBlocks())
-    // println("# max time: " + (finder.getMaxMillis())!!)
-    // println("# min time: " + (finder.getMinMillis())!!)
-    app.lsg.calculateNestingLevel()
+
+        // Start node is root of all other loops.
+        header[0] = 0
+
+        // Step c:
+        //
+        // The outer loop, unchanged from Tarjan. It does nothing except
+        // for those nodes which are the destinations of backedges.
+        // For a header node w, we chase backward from the sources of the
+        // backedges adding nodes to the set P, representing the body of
+        // the loop headed by w.
+        //
+        // By running through the nodes in reverse of the DFST preorder,
+        // we ensure that inner loop headers will be processed before the
+        // headers for surrounding loops.
+        //
+        for (w in size - 1 downTo 0) {
+            // this is 'P' in Havlak's paper
+            var nodePool = LinkedList<UnionFindNode>()
+
+            val nodeW = nodes[w].bb
+            if (nodeW != null) {
+                // dead BB
+
+                // Step d:
+                for (v in backPreds[w]) {
+                    if (v != w) {
+                        nodePool.add(nodes[v].findSet())
+                    } else {
+                        types[w] = BasicBlockClass.BB_SELF
+                    }
+                }
+
+                // Copy nodePool to workList.
+                //
+                var workList = LinkedList<UnionFindNode>()
+                workList.addAll(nodePool)
+
+                if (nodePool.size() != 0) {
+                    types[w] = BasicBlockClass.BB_REDUCIBLE
+                }
+
+                // work the list...
+                //
+                while (!workList.isEmpty()) {
+                    val x = workList.getFirst()
+                    workList.removeFirst()
+
+                    // Step e:
+                    //
+                    // Step e represents the main difference from Tarjan's method.
+                    // Chasing upwards from the sources of a node w's backedges. If
+                    // there is a node y' that is not a descendant of w, w is marked
+                    // the header of an irreducible loop, there is another entry
+                    // into this loop that avoids w.
+                    //
+
+                    // The algorithm has degenerated. Break and
+                    // return in this case.
+                    //
+                    val nonBackSize = nonBackPreds[x.dfsNumber].size()
+                    if (nonBackSize > MAXNONBACKPREDS) {
+                        return 0
+                    }
+
+                    for (iter in nonBackPreds[x.dfsNumber]) {
+                        val y = nodes[iter]
+                        val ydash = y.findSet()
+
+                        if (!isAncestor(w, ydash.dfsNumber, last)) {
+                            types[w] = BasicBlockClass.BB_IRREDUCIBLE
+                            nonBackPreds[w].add(ydash.dfsNumber)
+                        } else {
+                            if (ydash.dfsNumber != w) {
+                                if (!nodePool.contains(ydash)) {
+                                    workList.add(ydash)
+                                    nodePool.add(ydash)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Collapse/Unionize nodes in a SCC to a single node
+                // For every SCC found, create a loop descriptor and link it in.
+                //
+                if ((nodePool.size() > 0) || (types[w] == BasicBlockClass.BB_SELF)) {
+                    var loop = lsg.createNewLoop()
+
+                    loop.setHeader(nodeW)
+                    loop.isReducible = (types[w] != BasicBlockClass.BB_IRREDUCIBLE)
+
+                    // At this point, one can set attributes to the loop, such as:
+                    //
+                    // the bottom node:
+                    //    iter  = backPreds(w).begin();
+                    //    loop bottom is: nodes(iter).node;
+                    //
+                    // the number of backedges:
+                    //    backPreds(w).size()
+                    //
+                    // whether this loop is reducible:
+                    //    types(w) != BB_IRREDUCIBLE
+                    //
+                    nodes[w].loop = loop
+
+                    for (node in nodePool) {
+                        // Add nodes to loop descriptor.
+                        header[node.dfsNumber] = w
+                        node.union(nodes[w])
+
+                        // Nested loops are not added, but linked together.
+                        if (node.loop != null) {
+                            node.loop?.setSimpleLoopParent(loop)
+                        } else {
+                            loop.addNode(node.bb!!)
+                        }
+                    }
+
+                    lsg.addLoop(loop)
+                }  // nodePool.size
+            }  // dead BB
+        }  // Step c
+
+        return lsg.getNumLoops()
+    }  // findLoops
 }
