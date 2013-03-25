@@ -49,18 +49,11 @@ class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
         BB_LAST          // Sentinel
     }
 
-    class object {
 
-        //
-        // Constants
-        //
-        // Marker for uninitialized nodes.
-        val UNVISITED: Int = -1
+    val UNVISITED: Int = -1
 
-        // Safeguard against pathologic algorithm behavior.
-        val MAXNONBACKPREDS: Int = (32 * 1024)
-
-    }
+    // Safeguard against pathologic algorithm behavior.
+    val MAXNONBACKPREDS: Int = (32 * 1024)
 
     //
     // IsAncestor
@@ -189,7 +182,7 @@ class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
         // we ensure that inner loop headers will be processed before the
         // headers for surrounding loops.
         //
-        for (w in ((size - 1)..0)) {
+        for (w in size - 1 downTo 0) {
             // this is 'P' in Havlak's paper
             var nodePool = LinkedList<UnionFindNode>()
 
@@ -268,7 +261,7 @@ class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
                     // At this point, one can set attributes to the loop, such as:
                     //
                     // the bottom node:
-                    //    iter  = backPreds(w).begin();
+                    //    iter  = backPreds(w).begin(); 
                     //    loop bottom is: nodes(iter).node;
                     //
                     // the number of backedges:

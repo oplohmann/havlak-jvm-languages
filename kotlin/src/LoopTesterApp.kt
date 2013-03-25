@@ -1,7 +1,7 @@
 /**
  * Created with IntelliJ IDEA.
  * User: Nutzer
- * Date: 23.02.13
+ * Date: 23.02.13 
  * Time: 22:42
  * To change this template use File | Settings | File Templates.
  */
@@ -63,20 +63,20 @@ fun main(args: Array<String>) {
     app.cfg.createNode(1)
     BasicBlockEdge(app.cfg, 0, 2)
     println("15000 dummy loops")
-    for (dummyloop in 0..(15000 - 1)) {
+    15000.times {
         var finder : HavlakLoopFinder = HavlakLoopFinder(app.cfg, app.lsg)
         finder.findLoops()
     }
     println("Constructing CFG...")
     var n : Int = 2
-    for (parlooptrees in 0..(10 - 1)) {
+    10.times {
         app.cfg.createNode(n + 1)
         app.buildConnect(2, n + 1)
         n = n + 1
-        for (i in 0..100 - 1) {
+        100.times {
             var top : Int = n
             n = app.buildStraight(n, 1)
-            for (j in 0..25 - 1) {
+            25.times {
                 n = app.buildBaseLoop(n)
             }
             var bottom : Int = app.buildStraight(n, 1)
@@ -93,7 +93,7 @@ fun main(args: Array<String>) {
     println("Another 50 iterations...")
     var start : Long = System.currentTimeMillis()
     var maxMemory : Long = Runtime.getRuntime().maxMemory()
-    for (i in 0..(50 - 1)) {
+    50.times {
         println(maxMemory - (Runtime.getRuntime().freeMemory()))
         var finder2 : HavlakLoopFinder = HavlakLoopFinder(app.cfg, LSG())
         finder2.findLoops()
