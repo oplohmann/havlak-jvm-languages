@@ -16,7 +16,6 @@ import java.util.ArrayList
 */
 
 class UnionFindNode {
-
     var parent: UnionFindNode? = null
     var bb: BasicBlock? = null
     var loop: SimpleLoop? = null
@@ -24,7 +23,7 @@ class UnionFindNode {
 
     // Initialize this node.
     //
-    fun initNode(bb: BasicBlock, dfsNumber: Int): Unit {
+    fun initNode(bb: BasicBlock, dfsNumber: Int) {
         this.parent = this
         this.bb = bb
         this.dfsNumber = dfsNumber
@@ -37,9 +36,8 @@ class UnionFindNode {
     // visited and collapsed once, however, deep nests would still
     // result in significant traversals).
     //
-    fun findSet(): UnionFindNode
-    {
-        var nodeList = ArrayList<UnionFindNode>()
+    fun findSet(): UnionFindNode {
+        val nodeList = ArrayList<UnionFindNode>()
 
         var node = this
         while (node != node.parent) {
@@ -61,7 +59,7 @@ class UnionFindNode {
     // Trivial. Assigning parent pointer is enough,
     // we rely on path compression.
     //
-    fun union(basicBlock: UnionFindNode): Unit {
+    fun union(basicBlock: UnionFindNode) {
         parent = basicBlock
     }
 }

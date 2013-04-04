@@ -28,42 +28,40 @@ class LSG
         var loopCounter = 0
     }
 
-    var loops = ArrayList<SimpleLoop>()
-    var root = SimpleLoop()
+    val loops = ArrayList<SimpleLoop>()
+    val root = SimpleLoop();
 
-    constructor {
-        root.setTheNestingLevel(0)
+    {
+        root.nestingLevel = 0
         root.counter = LSG.loopCounter
-        LSG.loopCounter += 1
+        LSG.loopCounter++
         addLoop(root)
     }
 
     fun createNewLoop(): SimpleLoop {
-        var loop = SimpleLoop()
+        val loop = SimpleLoop()
         loop.counter = LSG.loopCounter
-        LSG.loopCounter += 1
+        LSG.loopCounter++
         return loop
     }
 
-    fun addLoop(loop: SimpleLoop): Unit {
+    fun addLoop(loop: SimpleLoop) {
         loops.add(loop)
     }
 
     fun dump() = dumpRec(root, 0)
 
-    fun dumpRec(loop: SimpleLoop, indent: Int): Unit
-    {
+    fun dumpRec(loop: SimpleLoop, indent: Int) {
         loop.dump(indent)
         for (liter in loop.children) {
             dumpRec(liter, indent + 1)
         }
     }
 
-    fun calculateNestingLevel(): Unit {
+    fun calculateNestingLevel() {
         for (liter in loops) {
-            if (!liter.isRoot)
-                if (liter.parent == null)
-                    liter.setSimpleLoopParent(root)
+            if (!liter.isRoot && liter.parent == null)
+                    liter.parent = root
         }
 
         calculateNestingLevelRec(root, 0)
@@ -71,12 +69,12 @@ class LSG
 
     fun max(a: Int, b: Int) = if (a > b) a else b
 
-    fun calculateNestingLevelRec(loop: SimpleLoop, depth: Int): Unit {
+    fun calculateNestingLevelRec(loop: SimpleLoop, depth: Int) {
         loop.depthLevel = depth
         for (liter in loop.children)
         {
             calculateNestingLevelRec(liter, depth + 1)
-            loop.setTheNestingLevel(max(loop.nestingLevel, 1 + liter.nestingLevel))
+            loop.nestingLevel = max(loop.nestingLevel, 1 + liter.nestingLevel)
         }
     }
 

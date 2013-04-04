@@ -20,64 +20,41 @@ import java.util.HashSet
 
 class SimpleLoop
 {
-    var basicBlocks = HashSet<BasicBlock>()
-    var children = HashSet<SimpleLoop>()
+    val basicBlocks = HashSet<BasicBlock>()
+    val children = HashSet<SimpleLoop>()
     var parent: SimpleLoop? = null
+        set(p: SimpleLoop?) {
+            $parent = p;
+            p?.addChildLoop(this);
+        }
     var header: BasicBlock? = null
+        set(bb: BasicBlock?) {
+            basicBlocks.add(bb!!)
+            $header = bb
+        }
 
-    var isRoot: Boolean = false
-    var isReducible: Boolean = true
-    var counter: Int = 0
-    var nestingLevel: Int = 0
-    var depthLevel: Int = 0
+    var isRoot = false
+    var isReducible = true
+    var counter = 0
+    var nestingLevel = 0
+        set(level: Int) {
+            $nestingLevel = level
+            isRoot = level == 0
+        }
+    var depthLevel = 0
 
-    // method made to return a dummy value as a work around for
-    // http://youtrack.jetbrains.com/issue/KT-904
-    fun addNode(bb: BasicBlock): String {
+    fun addNode(bb: BasicBlock) {
         basicBlocks.add(bb)
-        return ""
     }
 
-    // method made to return a dummy value as a work around for
-    // http://youtrack.jetbrains.com/issue/KT-904
-    fun addChildLoop(loop: SimpleLoop): String {
+    fun addChildLoop(loop: SimpleLoop) {
         children.add(loop)
-        return "";
     }
 
     fun dump(indent: Int) {
         for (i in 0..indent)
-            System.out.format("  ")
+            print("  ")
 
-        System.out.format("loop-%d nest: %d depth %d %s\n",
-                counter,
-                nestingLevel,
-                depthLevel,
-                if (isReducible) ""
-                else "(Irreducible) ");
-    }
-
-    // method made to return a dummy value as a work around for
-    // http://youtrack.jetbrains.com/issue/KT-904
-    fun setSimpleLoopParent(parent: SimpleLoop): String {
-        this.parent = parent
-        this.parent?.addChildLoop(this)
-        return ""
-    }
-
-    // method made to return a dummy value as a work around for
-    // http://youtrack.jetbrains.com/issue/KT-904
-    fun setHeader(bb: BasicBlock): String {
-        basicBlocks.add(bb)
-        header = bb
-        return ""
-    }
-
-    // method made to return a dummy value as a work around for
-    // http://youtrack.jetbrains.com/issue/KT-904
-    fun setTheNestingLevel(level: Int): String {
-        nestingLevel = level
-        isRoot = level == 0
-        return ""
+        println("loop-$counter nest: $nestingLevel depth $depthLevel ${ if (isReducible) "" else "(Irreducible)" }");
     }
 }

@@ -9,14 +9,14 @@ import java.util.ArrayList
 
 class BasicBlock(val name: Int)
 {
-    var inEdges = ArrayList<BasicBlock>()
-    var outEdges = ArrayList<BasicBlock>()
-
-    constructor {
-        BasicBlock.incrementBasicBlocks()
+    {
+        numBasicBlocks++;
     }
 
-    fun toString() = "BB#" + name
+    val inEdges = ArrayList<BasicBlock>()
+    val outEdges = ArrayList<BasicBlock>()
+
+    fun toString() = "BB#$name"
     fun getNumPred(): Int = inEdges.size()
     fun getNumSucc(): Int = outEdges.size()
 
@@ -28,32 +28,15 @@ class BasicBlock(val name: Int)
     }
 
     fun dump(): Unit {
-        var res = "BB#" + name + " "
+        var res = "BB#$name"
         if (inEdges.size() > 0)
             res += "\tin : " + inEdges
         if (outEdges.size() > 0)
             res += "\tout: " + outEdges
-        // println(res)
     }
 
     class object
     {
         var numBasicBlocks: Int = 0
-
-        // method made to return a dummy value as a work around for
-        // http://youtrack.jetbrains.com/issue/KT-904
-        fun setMyNumBasicBlocks(n: Int) : Int {
-            numBasicBlocks = n
-            return numBasicBlocks
-        }
-
-        fun incrementBasicBlocks() : String {
-            setMyNumBasicBlocks(numBasicBlocks + 1)
-            return ""
-        }
-
-        // method renamed from getNumBasicBlocks to getMyNumBasicBlocks as a work
-        // around for http://youtrack.jetbrains.com/issue/KT-904
-        fun getMyNumBasicBlocks(): Int = numBasicBlocks
     }
 }
