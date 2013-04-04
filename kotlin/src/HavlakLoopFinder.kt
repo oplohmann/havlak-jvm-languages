@@ -31,7 +31,6 @@
 //
 import java.util.ArrayList
 import java.util.HashMap
-import java.util.HashSet
 import java.util.LinkedList
 
 class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
@@ -49,7 +48,7 @@ class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
     val UNVISITED = -1
 
     // Safeguard against pathologic algorithm behavior.
-    val MAX_NONBACK_PREDS = (32 * 1024)
+    val MAX_NONBACK_PREDS = 32 * 1024
 
     //
     // IsAncestor
@@ -61,7 +60,7 @@ class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
     // for depth-first spanning trees. This is why DFS is the first
     // thing we run below.
     //
-    fun isAncestor(w: Int, v: Int, last: Array<Int>): Boolean = (w <= v) && (v <= last[w])
+    fun isAncestor(w: Int, v: Int, last: IntArray): Boolean = (w <= v) && (v <= last[w])
 
     //
     // DFS - Depth-First-Search
@@ -71,9 +70,9 @@ class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
     //
     fun doDFS(
             currentNode: BasicBlock,
-            nodes: Array<UnionFindNode>,
+            nodes: ArrayList<UnionFindNode>,
             number: MutableMap<BasicBlock, Int>,
-            last: Array<Int>,
+            last: IntArray,
             current: Int): Int
     {
         nodes[current].initNode(currentNode, current)
@@ -98,21 +97,28 @@ class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
     // paper (which, in turn, is similar to the one used by Tarjan).
     //
     fun findLoops(): Int {
-        if (cfg.startNode == null)
+        val startNode = cfg.startNode
+        if (startNode == null)
             return 0
 
-        val size = cfg.getNumNodes()
+        val size = cfg.numNodes
 
-        val nonBackPreds = Array<MutableSet<Int>>(size, {HashSet<Int>()})
-        val backPreds = Array<MutableList<Int>>(size, {ArrayList<Int>()})
+        val nonBackPreds = ArrayList<LinkedList<Int>>(size)
+        val backPreds = ArrayList<LinkedList<Int>>(size)
 
         val number = HashMap<BasicBlock, Int>()
 
-        val header = Array<Int>(size, {0})
-        val types = Array<BasicBlockClass>(size, {BasicBlockClass.BB_LAST})
-        val last = Array<Int>(size, {0})
-        val nodes = Array<UnionFindNode>(size, {UnionFindNode()})
+        val header = IntArray(size)
+        val types = ArrayList<BasicBlockClass>(size)
+        val last = IntArray(size)
+        val nodes = ArrayList<UnionFindNode>(size)
 
+        for (i in 0..size - 1) {
+            nonBackPreds.add(LinkedList<Int>())
+            backPreds.add(LinkedList<Int>())
+            types.add(BasicBlockClass.BB_TOP)
+            nodes.add(UnionFindNode())
+        }
 
         // Step a:
         //   - initialize all nodes as unvisited.
@@ -123,7 +129,7 @@ class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
             number[value] = UNVISITED
         }
 
-        doDFS(cfg.startNode!!, nodes, number, last, 0)
+        doDFS(startNode, nodes, number, last, 0)
 
         // Step b:
         //   - iterate over all nodes.
@@ -135,7 +141,7 @@ class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
         //     - the list of backedges (backPreds) or
         //     - the list of non-backedges (nonBackPreds)
         //
-        for (w in 0..(size - 1)) {
+        for (w in 0..size - 1) {
             header[w] = 0
             types[w] = BasicBlockClass.BB_NONHEADER
 
@@ -194,8 +200,7 @@ class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
 
                 // Copy nodePool to workList.
                 //
-                val workList = LinkedList<UnionFindNode>()
-                workList.addAll(nodePool)
+                val workList = LinkedList<UnionFindNode>(nodePool)
 
                 if (nodePool.size() != 0) {
                     types[w] = BasicBlockClass.BB_REDUCIBLE
@@ -204,8 +209,7 @@ class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
                 // work the list...
                 //
                 while (!workList.isEmpty()) {
-                    val x = workList.getFirst()
-                    workList.removeFirst()
+                    val x = workList.removeFirst()
 
                     // Step e:
                     //
@@ -268,8 +272,9 @@ class HavlakLoopFinder(val cfg: CFG, val lsg: LSG) {
                         node.union(nodes[w])
 
                         // Nested loops are not added, but linked together.
-                        if (node.loop != null) {
-                            node.loop!!.parent = loop
+                        val l = node.loop
+                        if (l != null) {
+                            l.parent = loop
                         } else {
                             loop.addNode(node.bb!!)
                         }

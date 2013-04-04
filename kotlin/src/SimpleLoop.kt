@@ -15,20 +15,20 @@
 // Furthermore, it can have any set of properties, e.g.,
 // it can be an irreducible loop, have control flow, be
 // a candidate for transformations, and what not.
-//
-import java.util.HashSet
+
+import java.util.LinkedList
 
 class SimpleLoop
 {
-    val basicBlocks = HashSet<BasicBlock>()
-    val children = HashSet<SimpleLoop>()
+    val basicBlocks = LinkedList<BasicBlock>()
+    val children = LinkedList<SimpleLoop>()
     var parent: SimpleLoop? = null
-        set(p: SimpleLoop?) {
+        set(p) {
             $parent = p;
             p?.addChildLoop(this);
         }
     var header: BasicBlock? = null
-        set(bb: BasicBlock?) {
+        set(bb) {
             basicBlocks.add(bb!!)
             $header = bb
         }

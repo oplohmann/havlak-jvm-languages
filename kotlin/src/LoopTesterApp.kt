@@ -5,6 +5,8 @@
  * Time: 22:42
  * To change this template use File | Settings | File Templates.
  */
+import kotlin.test.assertEquals
+
 class LoopTesterApp {
 
     val cfg = CFG()
@@ -19,7 +21,7 @@ class LoopTesterApp {
         return start + 3
     }
 
-    fun buildConnect(start : Int, end : Int) : Unit {
+    fun buildConnect(start : Int, end : Int) {
         BasicBlockEdge(cfg, start, end)
     }
 
@@ -42,10 +44,10 @@ class LoopTesterApp {
         return buildStraight(footer, 1)
     }
 
-    fun getMem() : Unit {
+    fun getMem() {
         val runtime = Runtime.getRuntime()
-        val value : Long = (runtime.totalMemory()) / 1024
-        println("  Total Memory: $value KB")
+        val value : Long = runtime.totalMemory() / 1024
+        println(" Total Memory: $value KB")
     }
 
 }
@@ -55,6 +57,7 @@ fun main(args: Array<String>) {
     println("Constructing App...")
     val app : LoopTesterApp = LoopTesterApp()
     app.getMem()
+
     println("Constructing Simple CFG...")
     app.cfg.createNode(0)
     app.buildBaseLoop(0)
@@ -95,7 +98,7 @@ fun main(args: Array<String>) {
     println("Another 50 iterations...")
     val start : Long = System.currentTimeMillis()
 //    val maxMemory : Long = Runtime.getRuntime().maxMemory()
-    50 times {
+    for (i in 1..50) {
         print(".")
 //        println(maxMemory - (Runtime.getRuntime().freeMemory()))
         val finder2 : HavlakLoopFinder = HavlakLoopFinder(app.cfg, LSG())
@@ -107,7 +110,11 @@ fun main(args: Array<String>) {
     app.getMem()
     println("# of loops: ${app.lsg.getNumLoops()} (including 1 artificial root node)")
     println("# of BBs  : ${BasicBlock.numBasicBlocks}")
+
+    assertEquals(121002, app.lsg.getNumLoops())
+    assertEquals(252013, BasicBlock.numBasicBlocks)
+
     // println("# max time: " + (finder.getMaxMillis())!!)
     // println("# min time: " + (finder.getMinMillis())!!)
-    app.lsg.calculateNestingLevel()
+//    app.lsg.calculateNestingLevel()
 }

@@ -5,7 +5,8 @@
  * Time: 21:36
  * To change this template use File | Settings | File Templates.
  */
-import java.util.ArrayList
+
+import java.util.LinkedList
 
 class BasicBlock(val name: Int)
 {
@@ -13,12 +14,12 @@ class BasicBlock(val name: Int)
         numBasicBlocks++;
     }
 
-    val inEdges = ArrayList<BasicBlock>()
-    val outEdges = ArrayList<BasicBlock>()
+    val inEdges = LinkedList<BasicBlock>()
+    val outEdges = LinkedList<BasicBlock>()
 
     fun toString() = "BB#$name"
-    fun getNumPred(): Int = inEdges.size()
-    fun getNumSucc(): Int = outEdges.size()
+    fun getNumPred() = inEdges.size()
+    fun getNumSucc() = outEdges.size()
 
     fun addInEdge (bb: BasicBlock) {
         inEdges.add(bb)
@@ -27,7 +28,7 @@ class BasicBlock(val name: Int)
         outEdges.add(bb)
     }
 
-    fun dump(): Unit {
+    fun dump() {
         var res = "BB#$name"
         if (inEdges.size() > 0)
             res += "\tin : " + inEdges

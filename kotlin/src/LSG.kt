@@ -19,8 +19,8 @@
 //   loop-1    1                1
 //   loop-3    1                1
 //   loop-2    0                2
-//
-import java.util.ArrayList
+
+import java.util.LinkedList
 
 class LSG
 {
@@ -28,20 +28,18 @@ class LSG
         var loopCounter = 0
     }
 
-    val loops = ArrayList<SimpleLoop>()
+    val loops = LinkedList<SimpleLoop>()
     val root = SimpleLoop();
 
     {
         root.nestingLevel = 0
-        root.counter = LSG.loopCounter
-        LSG.loopCounter++
+        root.counter = LSG.loopCounter++
         addLoop(root)
     }
 
     fun createNewLoop(): SimpleLoop {
         val loop = SimpleLoop()
-        loop.counter = LSG.loopCounter
-        LSG.loopCounter++
+        loop.counter = LSG.loopCounter++
         return loop
     }
 
@@ -61,7 +59,7 @@ class LSG
     fun calculateNestingLevel() {
         for (liter in loops) {
             if (!liter.isRoot && liter.parent == null)
-                    liter.parent = root
+                liter.parent = root
         }
 
         calculateNestingLevelRec(root, 0)
@@ -71,8 +69,7 @@ class LSG
 
     fun calculateNestingLevelRec(loop: SimpleLoop, depth: Int) {
         loop.depthLevel = depth
-        for (liter in loop.children)
-        {
+        for (liter in loop.children) {
             calculateNestingLevelRec(liter, depth + 1)
             loop.nestingLevel = max(loop.nestingLevel, 1 + liter.nestingLevel)
         }

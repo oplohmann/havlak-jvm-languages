@@ -5,7 +5,8 @@
  * Time: 21:39
  * To change this template use File | Settings | File Templates.
  */
-import java.util.ArrayList
+
+import java.util.LinkedList
 
 /**
 * class UnionFindNode
@@ -37,7 +38,7 @@ class UnionFindNode {
     // result in significant traversals).
     //
     fun findSet(): UnionFindNode {
-        val nodeList = ArrayList<UnionFindNode>()
+        val nodeList = LinkedList<UnionFindNode>()
 
         var node = this
         while (node != node.parent) {
