@@ -20,7 +20,8 @@ Measurements on my machine (Intel Core2 Duo CPU E8400 3.00 GHz, JDK1.7.0_06):
 - Kotlin initial: 52070 ms (my initial port to Kotlin)
 - Kotlin cosmetics bashor: 56672 ms
 - Scala: 27024 ms
-- Scala ArrayList: 47276 ms
+- Scala ArrayList: 47276 ms (ArrayList instead of Scala's functional list)
+- Scala ArrayList & HashSet: 76820 ms (ArrayList instead of Scala's functional list + HashSet instead of Scala's Set)
 - Groovy static with indy: 59814 ms
 - Groovy static without indy: 62309 ms
 - Groovy dynamic without indy: 84566 ms (without warmup!)
