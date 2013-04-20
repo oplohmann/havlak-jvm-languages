@@ -5,49 +5,49 @@
  * Time: 22:42
  * To change this template use File | Settings | File Templates.
  */
-public class LoopTesterApp {
+import kotlin.test.assertEquals
 
-    public var cfg : CFG = CFG()
-    public var lsg : LSG = LSG()
-    public var root : BasicBlock = cfg.createNode(0)
+class LoopTesterApp {
 
-    public open fun buildDiamond(start : Int) : Int {
-        var bb0 : Int = start
-        BasicBlockEdge(cfg, bb0, bb0 + 1)
-        BasicBlockEdge(cfg, bb0, bb0 + 2)
-        BasicBlockEdge(cfg, bb0 + 1, bb0 + 3)
-        BasicBlockEdge(cfg, bb0 + 2, bb0 + 3)
-        return bb0 + 3
+    val cfg = CFG()
+    val lsg = LSG()
+    val root = cfg.createNode(0)
+
+    fun buildDiamond(start : Int) : Int {
+        BasicBlockEdge(cfg, start, start + 1)
+        BasicBlockEdge(cfg, start, start + 2)
+        BasicBlockEdge(cfg, start + 1, start + 3)
+        BasicBlockEdge(cfg, start + 2, start + 3)
+        return start + 3
     }
 
-    public open fun buildConnect(start : Int, end : Int) : Unit {
+    fun buildConnect(start : Int, end : Int) {
         BasicBlockEdge(cfg, start, end)
     }
 
-    public open fun buildStraight(start : Int, n : Int) : Int {
+    fun buildStraight(start : Int, n : Int) : Int {
         for (i in 0..n - 1) {
             buildConnect(start + i, start + i + 1)
         }
         return start + n
     }
 
-    public open fun buildBaseLoop(from : Int) : Int {
-        var header : Int = buildStraight(from, 1)
-        var diamond1 : Int = buildDiamond(header)
-        var d11 : Int = buildStraight(diamond1, 1)
-        var diamond2 : Int = buildDiamond(d11)
-        var footer : Int = buildStraight(diamond2, 1)
+    fun buildBaseLoop(from : Int) : Int {
+        val header = buildStraight(from, 1)
+        val diamond1 = buildDiamond(header)
+        val d11 = buildStraight(diamond1, 1)
+        val diamond2 = buildDiamond(d11)
+        val footer = buildStraight(diamond2, 1)
         buildConnect(diamond2, d11)
         buildConnect(diamond1, header)
         buildConnect(footer, from)
-        footer = buildStraight(footer, 1)
-        return footer
+        return buildStraight(footer, 1)
     }
 
-    public open fun getMem() : Unit {
-        var runtime : Runtime = Runtime.getRuntime()
-        var value : Long = (runtime.totalMemory()) / 1024
-        println("  Total Memory: " + value + " KB")
+    fun getMem() {
+        val runtime = Runtime.getRuntime()
+        val value : Long = runtime.totalMemory() / 1024
+        println(" Total Memory: $value KB")
     }
 
 }
@@ -55,55 +55,66 @@ public class LoopTesterApp {
 fun main(args: Array<String>) {
     println("Welcome to LoopTesterApp, Java edition")
     println("Constructing App...")
-    var app : LoopTesterApp = LoopTesterApp()
+    val app : LoopTesterApp = LoopTesterApp()
     app.getMem()
+
     println("Constructing Simple CFG...")
     app.cfg.createNode(0)
     app.buildBaseLoop(0)
     app.cfg.createNode(1)
     BasicBlockEdge(app.cfg, 0, 2)
+
     println("15000 dummy loops")
-    15000.times {
-        var finder : HavlakLoopFinder = HavlakLoopFinder(app.cfg, app.lsg)
+    15000 times {
+        val finder : HavlakLoopFinder = HavlakLoopFinder(app.cfg, app.lsg)
         finder.findLoops()
     }
+
     println("Constructing CFG...")
     var n : Int = 2
-    10.times {
+    10 times {
         app.cfg.createNode(n + 1)
         app.buildConnect(2, n + 1)
-        n = n + 1
-        100.times {
-            var top : Int = n
+        n++
+        100 times {
+            val top = n
             n = app.buildStraight(n, 1)
-            25.times {
+            25 times {
                 n = app.buildBaseLoop(n)
             }
-            var bottom : Int = app.buildStraight(n, 1)
+            val bottom = app.buildStraight(n, 1)
             app.buildConnect(n, top)
             n = bottom
         }
         app.buildConnect(n, 1)
     }
     app.getMem()
+
     println("Performing Loop Recognition\n1 Iteration\n")
-    var finder : HavlakLoopFinder = HavlakLoopFinder(app.cfg, app.lsg)
+    val finder : HavlakLoopFinder = HavlakLoopFinder(app.cfg, app.lsg)
     finder.findLoops()
     app.getMem()
+
     println("Another 50 iterations...")
-    var start : Long = System.currentTimeMillis()
-    var maxMemory : Long = Runtime.getRuntime().maxMemory()
-    50.times {
-        println(maxMemory - (Runtime.getRuntime().freeMemory()))
-        var finder2 : HavlakLoopFinder = HavlakLoopFinder(app.cfg, LSG())
+    val start : Long = System.currentTimeMillis()
+//    val maxMemory : Long = Runtime.getRuntime().maxMemory()
+    for (i in 1..50) {
+        print(".")
+//        println(maxMemory - (Runtime.getRuntime().freeMemory()))
+        val finder2 : HavlakLoopFinder = HavlakLoopFinder(app.cfg, LSG())
         finder2.findLoops()
     }
-    println("Time: " + (System.currentTimeMillis() - start) + " ms")
-    println("")
+    println("\nTime: ${System.currentTimeMillis() - start} ms")
+    println()
+
     app.getMem()
-    println("# of loops: " + (app.lsg.getNumLoops()) + " (including 1 artificial root node)")
-    println("# of BBs  : " + BasicBlock.getMyNumBasicBlocks())
+    println("# of loops: ${app.lsg.getNumLoops()} (including 1 artificial root node)")
+    println("# of BBs  : ${BasicBlock.numBasicBlocks}")
+
+    assertEquals(121002, app.lsg.getNumLoops())
+    assertEquals(252013, BasicBlock.numBasicBlocks)
+
     // println("# max time: " + (finder.getMaxMillis())!!)
     // println("# min time: " + (finder.getMinMillis())!!)
-    app.lsg.calculateNestingLevel()
+//    app.lsg.calculateNestingLevel()
 }
