@@ -15,12 +15,12 @@ The sources for Java and Scala can be found here: http://code.google.com/p/multi
 
 Measurements on my machine (Intel Core2 Duo CPU E8400 3.00 GHz, JDK1.7.0_06):
 
-Java: 52070 ms
-Kotlin: 20246 ms
-Kotlin initial: 52070 ms
-kotlin-cosmetics-bashor: 20246 ms
-Scala: 27024 ms
-Scala ArrayList: 47276 ms
-Groovy static with indy: 59814 ms
-Groovy static without indy: 62309 ms
-Groovy dynamic without indy: 84566 ms
+- Java: 52070 ms
+- Kotlin: 20246 ms
+- Kotlin initial: 52070 ms
+- kotlin-cosmetics-bashor: 20246 ms
+- Scala: 27024 ms
+- Scala ArrayList: 47276 ms
+- Groovy static with indy: 59814 ms
+- Groovy static without indy: 62309 ms
+- Groovy dynamic without indy: 84566 ms
