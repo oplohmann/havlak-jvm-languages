@@ -23,4 +23,4 @@ Measurements on my machine (Intel Core2 Duo CPU E8400 3.00 GHz, JDK1.7.0_06):
 - Scala ArrayList: 47276 ms
 - Groovy static with indy: 59814 ms
 - Groovy static without indy: 62309 ms
-- Groovy dynamic without indy: 84566 ms
+- Groovy dynamic without indy: 84566 ms (without warmup!)
