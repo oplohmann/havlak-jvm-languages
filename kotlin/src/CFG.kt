@@ -12,27 +12,27 @@
 // That's it.
 //
 import java.util.HashMap
-import java.util.ArrayList
+import java.util.LinkedList
 
 class CFG()
 {
     var startNode: BasicBlock? = null
-    var basicBlockMap = HashMap<Int, BasicBlock>()
-    var edgeList = ArrayList<BasicBlockEdge>()
+    val basicBlockMap = HashMap<Int, BasicBlock>()
+    val edgeList = LinkedList<BasicBlockEdge>()
 
-    fun createNode(name: Int): BasicBlock
-    {
-        var node = basicBlockMap.get(name)
-        if(node == null) {
+    fun createNode(name: Int): BasicBlock {
+        fun createAndRegisterBaseBlock(name: Int) : BasicBlock {
             val tmp = BasicBlock(name)
             basicBlockMap.put(name, tmp)
-            node = tmp
+            return tmp;
         }
 
-        if (getNumNodes() == 1)
+        val node = basicBlockMap[name] ?: createAndRegisterBaseBlock(name)
+
+        if (startNode == null)
             startNode = node
 
-        return node!!
+        return node
     }
 
     fun dump() {
@@ -40,11 +40,10 @@ class CFG()
             bb.dump()
     }
 
-    fun addEdge(edge: BasicBlockEdge): Unit {
+    fun addEdge(edge: BasicBlockEdge) {
         edgeList.add(edge)
     }
 
-    fun getNumNodes(): Int = basicBlockMap.size()
-    fun getDst(edge: BasicBlockEdge): BasicBlock = edge.to
-    fun getSrc(edge: BasicBlockEdge): BasicBlock = edge.from
+    val numNodes: Int
+        get() = basicBlockMap.size()
 }
