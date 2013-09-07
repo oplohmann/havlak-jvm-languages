@@ -15,7 +15,7 @@ The sources for Java and Scala can be found here: http://code.google.com/p/multi
 
 Measurements on my machine (Intel Core2 Duo CPU E8400 3.00 GHz, JDK1.7.0_06):
 
-- Java: 52070 ms
+- Java: 51679 ms
 - Kotlin: 20246 ms (including performance improvements by bashor)
 - Kotlin initial: 52070 ms (my initial port to Kotlin)
 - Kotlin cosmetics bashor: 56672 ms
