@@ -25,7 +25,6 @@ class CFG()
         var node = basicBlockMap.get(name)
         if(node == null) {
             val tmp = BasicBlock(name)
-            tmp.init()
             basicBlockMap.put(name, tmp)
             node = tmp
         }

@@ -18,7 +18,7 @@ class BasicBlockEdge(val cfg: CFG, fromName: Int, toName: Int)
     var from: BasicBlock = cfg.createNode(fromName)
     var to: BasicBlock = cfg.createNode(toName)
 
-    public fun init() {
+    ;{
         from.addOutEdge(to)
         to.addInEdge(from)
         cfg.addEdge(this)

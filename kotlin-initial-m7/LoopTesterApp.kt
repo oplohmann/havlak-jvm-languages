@@ -13,15 +13,15 @@ public class LoopTesterApp {
 
     public open fun buildDiamond(start : Int) : Int {
         var bb0 : Int = start
-        BasicBlockEdge(cfg, bb0, bb0 + 1).init()
-        BasicBlockEdge(cfg, bb0, bb0 + 2).init()
-        BasicBlockEdge(cfg, bb0 + 1, bb0 + 3).init()
-        BasicBlockEdge(cfg, bb0 + 2, bb0 + 3).init()
+        BasicBlockEdge(cfg, bb0, bb0 + 1)
+        BasicBlockEdge(cfg, bb0, bb0 + 2)
+        BasicBlockEdge(cfg, bb0 + 1, bb0 + 3)
+        BasicBlockEdge(cfg, bb0 + 2, bb0 + 3)
         return bb0 + 3
     }
 
     public open fun buildConnect(start : Int, end : Int) : Unit {
-        BasicBlockEdge(cfg, start, end).init()
+        BasicBlockEdge(cfg, start, end)
     }
 
     public open fun buildStraight(start : Int, n : Int) : Int {
@@ -61,7 +61,7 @@ fun main(args: Array<String>) {
     app.cfg.createNode(0)
     app.buildBaseLoop(0)
     app.cfg.createNode(1)
-    BasicBlockEdge(app.cfg, 0, 2).init()
+    BasicBlockEdge(app.cfg, 0, 2)
     println("15000 dummy loops")
     15000.times {
         var finder : HavlakLoopFinder = HavlakLoopFinder(app.cfg, app.lsg)

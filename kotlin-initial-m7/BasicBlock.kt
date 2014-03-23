@@ -9,10 +9,11 @@ import java.util.ArrayList
 
 class BasicBlock(val name: Int)
 {
+
     var inEdges = ArrayList<BasicBlock>()
     var outEdges = ArrayList<BasicBlock>()
 
-    public fun init() {
+    ;{
         BasicBlock.incrementBasicBlocks()
     }
 
