@@ -9,13 +9,16 @@ and other languages such as Java and Scala: https://days2011.scala-lang.org/site
 
 The sources for Java and Scala can be found here: http://code.google.com/p/multi-language-bench/source/browse/trunk/src/
 
-#####Make sure you run the Groovy code using JAVA_OPTS=-server -Xss15500k -Xmx1G. Otherwise, you will get a stackoverflow.
+#####Make sure you run the code with the VM options below. Otherwise, you will get a stackoverflow.
 
-#####Same thing for Kotlin: VM args -server -Xss15500k required 
+- Java: -server -Xss15500k
+- Groovy: JAVA_OPTS=-server -Xss15500k -Xmx1G.
+- Kotlin: -server -Xss15500k 
+- Scala: -server -Xss15500k 
 
-Measurements on my machine (Intel Core2 Duo CPU E8400 3.00 GHz, JDK1.7.0_06):
+#####Measurements on my machine (Intel Core2 Duo CPU E8400 3.00 GHz, JDK1.7.0_06):
 
-- Java: 52070 ms
+- Java: 51679 ms
 - Kotlin: 20246 ms (including performance improvements by bashor)
 - Kotlin initial: 52070 ms (my initial port to Kotlin)
 - Kotlin cosmetics bashor: 56672 ms
